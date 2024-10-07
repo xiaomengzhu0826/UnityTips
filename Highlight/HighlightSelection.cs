@@ -11,7 +11,8 @@ namespace P3
 
         private GameObject lastClickedObject = null;
         private Color originalColor;
-        private string materialPath = "Materials/SkyBlue";
+        private string materialPath = "Materials/Outline";
+        private string _highlightPath = "Materials/SelectHighlight";
         public float transparencyValue = 0.5f;
         private void OnEnable()
         {
@@ -51,6 +52,7 @@ namespace P3
                 if (lastClickedObject != null && lastClickedObject != clickedObject)
                 {
                     Renderer lastRenderer = lastClickedObject.GetComponent<Renderer>();
+                    RemoveSecondaryMaterial(lastRenderer);
                     if (lastRenderer != null)
                     {
                         // 恢复到原来的颜色
@@ -115,6 +117,42 @@ namespace P3
                 Debug.LogError("Target object does not have a Renderer component.");
             }
         }
+
+        private void RemoveSecondaryMaterial(Renderer renderer)
+        {
+            if (renderer != null)
+            {
+                // 获取当前物体的所有材质
+                Material[] currentMaterials = renderer.materials;
+
+                // 确保有足够的材质可以移除
+                if (currentMaterials.Length > 1)
+                {
+                    // 创建一个新的材质数组，比原数组少一个位置
+                    Material[] newMaterials = new Material[currentMaterials.Length - 1];
+
+                    // 将第一个材质复制到新数组
+                    newMaterials[0] = currentMaterials[0];
+
+                    // 如果有超过两个材质，将剩余的材质复制到新数组
+                    for (int i = 2; i < currentMaterials.Length; i++)
+                    {
+                        newMaterials[i - 1] = currentMaterials[i];
+                    }
+
+                    // 将新的材质数组赋值回 Renderer
+                    renderer.materials = newMaterials;
+                }
+                else
+                {
+                    Debug.LogWarning("The object has less than two materials, no need to remove.");
+                }
+            }
+            else
+            {
+                Debug.LogError("Target object does not have a Renderer component.");
+            }
+        }
         private void OnDisable()
         {
             try
@@ -126,8 +164,6 @@ namespace P3
 
             }
         }
-
-
     }
 }
 
